@@ -44,7 +44,7 @@ app.get('/info', (req, res) => {
 
 app.post('/subscribe', (req, res) => {
   if (!req.body || typeof req.body !== 'object') {
-    res.status(400).send({
+    return res.status(400).send({
       message: 'Error: missing or invalid request body'
     })
   }
@@ -52,14 +52,22 @@ app.post('/subscribe', (req, res) => {
   const { topic, webhook } = req.body
 
   if (!topic || typeof topic !== 'string') {
-    res.status(400).send({
+    return res.status(400).send({
       message: 'Error: missing or invalid topic field'
     })
   }
 
   if (!webhook || typeof webhook !== 'string') {
-    res.status(400).send({
+    return res.status(400).send({
       message: 'Error: missing or invalid webhook field'
+    })
+  }
+  
+  // Check webhook whitelist
+  const whitelist = config.webhook_whitelist.split(",")
+  if (!whitelist.includes(webhook)) {
+    return res.status(400).send({
+      message: 'Error:  invalid webhook value'
     })
   }
 
