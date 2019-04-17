@@ -44,7 +44,7 @@ app.get('/info', (req, res) => {
 
 app.post('/subscribe', (req, res) => {
   if (!req.body || typeof req.body !== 'object') {
-    res.status(400).send({
+    return res.status(400).send({
       message: 'Error: missing or invalid request body'
     })
   }
