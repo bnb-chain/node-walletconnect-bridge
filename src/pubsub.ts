@@ -43,9 +43,7 @@ const PubController = (socketMessage: ISocketMessage) => {
   pushNotification(socketMessage.topic)
 
   if (subscribers.length) {
-    subscribers.forEach((subscriber: ISocketSub) =>
-      socketSend(subscriber.socket, socketMessage)
-    )
+    socketSend(subscribers[0].socket, socketMessage)
   } else {
     setPub(socketMessage)
   }
