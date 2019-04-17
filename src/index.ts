@@ -64,11 +64,13 @@ app.post('/subscribe', (req, res) => {
   }
   
   // Check webhook whitelist
-  const whitelist = config.webhook_whitelist.split(",")
-  if (!whitelist.includes(webhook)) {
-    return res.status(400).send({
-      message: 'Error:  invalid webhook value'
-    })
+  if (config.webhook_whitelist) {
+    const whitelist = config.webhook_whitelist.split(",")
+    if (!whitelist.includes(webhook)) {
+      return res.status(400).send({
+        message: 'Error:  invalid webhook value'
+      })
+    }
   }
 
   setNotification({ topic, webhook })
