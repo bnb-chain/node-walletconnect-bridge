@@ -25,9 +25,7 @@ const SubController = (socket: WebSocket, socketMessage: ISocketMessage) => {
 
   const subscriber = { topic, socket }
 
-  const subscribers = subs.filter(subscriber => subscriber.topic === topic)
-
-  if (subscribers.length === 0) {
+  if (getSub(topic).length === 0) {
     setSub(subscriber)
 
     const pending = getPub(topic)
