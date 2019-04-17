@@ -25,14 +25,22 @@ const SubController = (socket: WebSocket, socketMessage: ISocketMessage) => {
 
   const subscriber = { topic, socket }
 
-  setSub(subscriber)
+  const subscribers = subs.filter(subscriber => subscriber.topic === topic)
 
-  const pending = getPub(topic)
+  if (subscribers.length === 0) {
+    setSub(subscriber)
 
-  if (pending && pending.length) {
-    pending.forEach((pendingMessage: ISocketMessage) =>
-      socketSend(socket, pendingMessage)
-    )
+    const pending = getPub(topic)
+
+    if (pending && pending.length) {
+      pending.forEach((pendingMessage: ISocketMessage) =>
+        socketSend(socket, pendingMessage)
+      )
+    }
+  }
+  else {
+    const errorMessage = "Topic already subscribed"
+    socketSend(socket, errorMessage)
   }
 }
 
@@ -43,7 +51,9 @@ const PubController = (socketMessage: ISocketMessage) => {
   pushNotification(socketMessage.topic)
 
   if (subscribers.length) {
-    socketSend(subscribers[0].socket, socketMessage)
+    subscribers.forEach((subscriber: ISocketSub) =>
+      socketSend(subscriber.socket, socketMessage)
+    )
   } else {
     setPub(socketMessage)
   }
