@@ -37,8 +37,11 @@ const SubController = (socket: WebSocket, socketMessage: ISocketMessage) => {
     }
   }
   else {
-    const errorMessage = "Topic already subscribed"
-    socketSend(socket, errorMessage)
+    const errorResponse = {
+      "error" : true,
+      "errorMessage" : "Topic already subscribed"
+    }
+    socketSend(socket, JSON.stringify(errorResponse))
   }
 }
 
