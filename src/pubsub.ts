@@ -2,31 +2,46 @@ import WebSocket from 'ws'
 import { ISocketMessage, ISocketSub } from './types'
 import { pushNotification } from './notification'
 
-const subs: Record<string, ISocketSub[]> = {}
-const pubs: Record<string, ISocketMessage[]> = {}
+//Messages only last in pubs for 30 mins
+const CLEANUP_INTERVAL = 30 * 60 * 1000
+
+const subs = new Map<string, ISocketSub[]>()
+const pubs = new Map<string, ISocketMessage[]>()
 
 const setSub = function (subscriber: ISocketSub, topic: string){ 
-  if (subs[topic] == null) {
-    subs[topic] = [subscriber]
+  const sub = subs.get(topic)
+  if (!sub) {
+    subs.set(topic,[subscriber])
   } else {
-    subs[topic].push(subscriber)
+    sub.push(subscriber)
+    subs.set(topic,sub)
   }
 }
 
 const getSub = function (topic: string): ISocketSub[] { 
-  return subs[topic]
+  const sub = subs.get(topic)
+  if (sub) {
+    return sub
+  }
+  return []
 }
 
 const setPub = function (socketMessage: ISocketMessage, topic: string) { 
-  if (pubs[topic] == null) {
-    pubs[topic] = [socketMessage]
+  const pub = pubs.get(topic)
+  if (!pub) {
+    pubs.set(topic,[socketMessage])
   } else {
-    pubs[topic].push(socketMessage)
+    pub.push(socketMessage)
+    pubs.set(topic,pub)
   } 
 }
 
 const getPub = function (topic: string): ISocketMessage[] { 
-  return pubs[topic]
+  const pub = pubs.get(topic)
+  if (pub) {
+    return pub
+  }
+  return []
 }
 
 function socketSend (socket: WebSocket, socketMessage: ISocketMessage) {
@@ -37,13 +52,14 @@ function socketSend (socket: WebSocket, socketMessage: ISocketMessage) {
 }
 
 const delPub = function (topic: string) { 
-  delete pubs[topic]
+  pubs.delete(topic)
 }
 
 const SubController = (socket: WebSocket, socketMessage: ISocketMessage) => {
   const topic = socketMessage.topic
+  let time = Date.now() 
 
-  const subscriber = { topic, socket }
+  const subscriber = { topic, socket, time }
 
   setSub(subscriber, topic)
 
@@ -62,12 +78,12 @@ const PubController = (socketMessage: ISocketMessage) => {
 
   // send push notifications
   pushNotification(socketMessage.topic)
-
-  if (subscribers != null) {
+  if (subscribers.length > 0) {
     subscribers.forEach((subscriber: ISocketSub) =>
       socketSend(subscriber.socket, socketMessage)
     )
   } else {
+    socketMessage.time = Date.now()
     setPub(socketMessage, socketMessage.topic)
   }
 }
@@ -100,6 +116,37 @@ export default (socket: WebSocket, data: WebSocket.Data) => {
         }
       } catch (e) {
         console.error('incoming message parse error:', message, e)
+      }
+    }
+  }
+}
+
+export const cleanUpSub = (socket: WebSocket) => {
+  for (let topic of subs.keys()) {
+    let sub = subs.get(topic)
+    if (sub){
+      sub = sub.filter(s => s.socket !== socket)
+      subs.set(topic,sub)
+      if (sub.length < 1) {
+        subs.delete(topic)
+      }
+    }
+  }
+}
+
+export const cleanUpPub = () => {
+  for (let topic in pubs) {
+    const pub = pubs.get(topic)
+    if (pub) {
+      while (pub.length != 0) {
+        if (pub[0].time < Date.now() - CLEANUP_INTERVAL) {
+          pub.shift()
+        } else {
+          break
+        }
+      }
+      if (pub.length < 1) {
+        pubs.delete(topic)
       }
     }
   }

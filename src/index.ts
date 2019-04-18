@@ -2,11 +2,11 @@ import fastify from 'fastify'
 import Helmet from 'fastify-helmet'
 import WebSocket from 'ws'
 import config from './config'
-import pubsub from './pubsub'
+import pubsub, { cleanup, cleanUpSub, cleanUpPub } from './pubsub'
 import { setNotification } from './notification'
 import pkg from '../package.json'
 
-const CLIENT_PING_INTERVAL = 30 * 1000
+const CLIENT_PING_INTERVAL = 3 * 1000
 
 const noop = () => {}
 
@@ -82,6 +82,9 @@ app.ready(() => {
     socket.on('message', async data => {
       pubsub(socket, data)
     })
+    socket.on('close', async => {
+      cleanUpSub(socket)
+    })
   })
 })
 
@@ -95,6 +98,7 @@ setInterval(function ping () {
     aliveSockets.delete(socket)
     socket.ping(noop)
   })
+  cleanUpPub()
 }, CLIENT_PING_INTERVAL)
 
 const [host, port] = config.host.split(':')
