@@ -6,7 +6,7 @@ import pubsub, { cleanUpSub, cleanUpPub } from './pubsub'
 import { setNotification } from './notification'
 import pkg from '../package.json'
 
-const CLIENT_PING_INTERVAL = 3 * 1000
+const CLIENT_PING_INTERVAL = 30 * 1000
 
 const noop = () => {}
 
