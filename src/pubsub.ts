@@ -2,7 +2,6 @@ import WebSocket from 'ws'
 import { ISocketMessage, ISocketSub } from './types'
 import { pushNotification } from './notification'
 
-
 const subs: Record<string, ISocketSub[]> = {}
 const pubs: Record<string, ISocketMessage[]> = {}
 
@@ -18,7 +17,7 @@ const getSub = function (topic: string): ISocketSub[] {
   return subs[topic]
 }
 
-const setPub = function (socketMessage: ISocketMessage, topic: string){ 
+const setPub = function (socketMessage: ISocketMessage, topic: string) { 
   if (pubs[topic] == null) {
     pubs[topic] = [socketMessage]
   } else {
@@ -37,6 +36,10 @@ function socketSend (socket: WebSocket, socketMessage: ISocketMessage) {
   }
 }
 
+const delPub = function (topic: string) { 
+  delete pubs[topic]
+}
+
 const SubController = (socket: WebSocket, socketMessage: ISocketMessage) => {
   const topic = socketMessage.topic
 
@@ -50,6 +53,7 @@ const SubController = (socket: WebSocket, socketMessage: ISocketMessage) => {
     pending.forEach((pendingMessage: ISocketMessage) =>
       socketSend(socket, pendingMessage)
     )
+    delPub(topic)
   }
 }
 
