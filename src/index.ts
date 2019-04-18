@@ -2,7 +2,7 @@ import fastify from 'fastify'
 import Helmet from 'fastify-helmet'
 import WebSocket from 'ws'
 import config from './config'
-import pubsub, { cleanup, cleanUpSub, cleanUpPub } from './pubsub'
+import pubsub, { cleanUpSub, cleanUpPub } from './pubsub'
 import { setNotification } from './notification'
 import pkg from '../package.json'
 
