@@ -5,12 +5,13 @@ import fastify from 'fastify'
 import Helmet from 'fastify-helmet'
 import WebSocket from 'ws'
 import config from './config'
-import pubsub, { cleanUpSub, cleanUpPub } from './pubsub'
+import pubsub, { cleanUpSub, cleanUpPub, subs, pubs } from './pubsub'
 import { setNotification } from './notification'
 
 import pkg from '../package.json'
 
 const CLIENT_PING_INTERVAL = 30 * 1000
+const LOGGING_INTERVAL = 30 * 60 * 1000
 
 const noop = () => {}
 
@@ -118,7 +119,14 @@ setInterval(function ping () {
     socket.ping(noop)
   })
   cleanUpPub()
+  
 }, CLIENT_PING_INTERVAL)
+
+
+setInterval(function logging() {
+  app.log.info(`Pubs active: ` + pubs.size)
+  app.log.info(`Subs active: ` + subs.size)
+}, LOGGING_INTERVAL)
 
 const [host, port] = config.host.split(':')
 app.listen(+port, host, (err, address) => {

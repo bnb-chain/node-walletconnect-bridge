@@ -5,8 +5,8 @@ import { pushNotification } from './notification'
 //Messages only last in pubs for 30 mins
 const CLEANUP_INTERVAL = 30 * 60 * 1000
 
-const subs = new Map<string, ISocketSub[]>()
-const pubs = new Map<string, ISocketMessage[]>()
+export const subs = new Map<string, ISocketSub[]>()
+export const pubs = new Map<string, ISocketMessage[]>()
 
 const setSub = function (subscriber: ISocketSub, topic: string){ 
   const sub = subs.get(topic)
@@ -135,8 +135,7 @@ export const cleanUpSub = (socket: WebSocket) => {
 }
 
 export const cleanUpPub = () => {
-  for (let topic in pubs) {
-    const pub = pubs.get(topic)
+  for (const [topic, pub] of pubs) {
     if (pub) {
       while (pub.length != 0) {
         if (pub[0].time < Date.now() - CLEANUP_INTERVAL) {
