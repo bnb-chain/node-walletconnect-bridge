@@ -100,7 +100,7 @@ app.ready(() => {
       aliveSockets.set(socket, true)
     })
     socket.on('message', async data => {
-      pubsub(socket, data)
+      pubsub(app, socket, data)
     })
     socket.on('close', async => {
       cleanUpSub(socket)

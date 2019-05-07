@@ -88,7 +88,7 @@ const PubController = (socketMessage: ISocketMessage) => {
   }
 }
 
-export default (socket: WebSocket, data: WebSocket.Data) => {
+export default (app, socket: WebSocket, data: WebSocket.Data) => {
   const message: string = String(data)
 
   if (message) {
@@ -115,7 +115,7 @@ export default (socket: WebSocket, data: WebSocket.Data) => {
             break
         }
       } catch (e) {
-        console.error('incoming message parse error:', message, e)
+        app.log.error('incoming message parse error:', message, e)
       }
     }
   }
