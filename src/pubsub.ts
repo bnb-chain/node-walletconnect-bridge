@@ -1,6 +1,7 @@
 import WebSocket from 'ws'
 import { ISocketMessage, ISocketSub } from './types'
 import { pushNotification } from './notification'
+import fastify from 'fastify'
 
 //Messages only last in pubs for 30 mins
 const CLEANUP_INTERVAL = 30 * 60 * 1000
@@ -88,7 +89,7 @@ const PubController = (socketMessage: ISocketMessage) => {
   }
 }
 
-export default (app, socket: WebSocket, data: WebSocket.Data) => {
+export default (app: fastify.FastifyInstance, socket: WebSocket, data: WebSocket.Data) => {
   const message: string = String(data)
 
   if (message) {
