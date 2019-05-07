@@ -119,7 +119,6 @@ setInterval(function ping () {
     socket.ping(noop)
   })
   cleanUpPub()
-  
 }, CLIENT_PING_INTERVAL)
 
 
