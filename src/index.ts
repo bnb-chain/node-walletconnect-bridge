@@ -40,11 +40,11 @@ app.get('/health', (_, res) => {
   res.status(204).send()
 })
 
-app.get('/hello', (req, res) => {
+app.get('/hello', (_, res) => {
   res.status(200).send(`Hello World, this is WalletConnect v${pkg.version}`)
 })
 
-app.get('/info', (req, res) => {
+app.get('/info', (_, res) => {
   res.status(200).send({
     name: pkg.name,
     description: pkg.description,
@@ -54,32 +54,36 @@ app.get('/info', (req, res) => {
 
 app.post('/subscribe', (req, res) => {
   if (!req.body || typeof req.body !== 'object') {
-    return res.status(400).send({
+    res.status(400).send({
       message: 'Error: missing or invalid request body'
     })
+    return
   }
 
   const { topic, webhook } = req.body
 
   if (!topic || typeof topic !== 'string') {
-    return res.status(400).send({
+    res.status(400).send({
       message: 'Error: missing or invalid topic field'
     })
+    return
   }
 
   if (!webhook || typeof webhook !== 'string') {
-    return res.status(400).send({
+    res.status(400).send({
       message: 'Error: missing or invalid webhook field'
     })
+    return
   }
-  
+
   // Check webhook whitelist
   if (config.webhook_whitelist) {
-    const whitelist = config.webhook_whitelist.split(",")
+    const whitelist = config.webhook_whitelist.split(',')
     if (!whitelist.includes(webhook)) {
-      return res.status(400).send({
+      res.status(400).send({
         message: 'Error:  invalid webhook value'
       })
+      return
     }
   }
 
@@ -121,8 +125,7 @@ setInterval(function ping () {
   cleanUpPub()
 }, CLIENT_PING_INTERVAL)
 
-
-setInterval(function logging() {
+setInterval(function logging () {
   app.log.info(`Pubs active: ` + pubs.size)
   app.log.info(`Subs active: ` + subs.size)
 }, LOGGING_INTERVAL)
